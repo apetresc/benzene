@@ -1,0 +1,32 @@
+Explorer uses Boost.Test as a unit test framework,
+see http://boost.org/libs/test/doc/index.html
+
+Installation
+------------
+
+The Boost library has to be installed on the system, currently the tests
+should work with Boost version 1.31, 1.32 or 1.33.
+On Linux Fedora Core 3 and Fedora Core 4, nothing has to be done, if the
+package boost is installed.
+On Mac OS, the boost library has to be installed with Fink or by downloading
+and installing Boost from http://boost.org and setting the environment
+variable:
+export CPLUS_INCLUDE_PATH=/usr/local/include/boost-1_33
+
+Running
+-------
+
+To compile and run the tests, do a
+
+make test
+
+in /src
+
+Adding Tests
+------------
+
+Example:
+The unit tests for hex/VC.cpp are in hex/test/VCTest.cpp.
+Write the tests using the Boost.Test auto-registration facility,
+see hex/test/VCTest.cpp for an example.
+Don't forget to add the test source files to test/Makefile.prj.inc.

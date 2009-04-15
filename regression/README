@@ -1,0 +1,16 @@
+Regression testing README
+=========================
+
+To run the tests, do:
+
+% ./run.sh
+
+To see the available options:
+
+% ./run.sh -h
+
+Make sure you have a 'gtpregress' tool in the root regression
+directory. You can find such a tool in the bin/ directory of 'gogui'.
+Copy the bin/gtpregress script and the lib/gtpregress.jar files to the
+root regression directory, and edit the script so it points the
+the jar correctly.  

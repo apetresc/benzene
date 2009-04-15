@@ -1,0 +1,60 @@
+Project Benzene README [08/04/08]
+
+Directory Layout:
+=================
+
+bin/         compiled executables (benzene and six) along with scripts to
+             run in wolve,mohex,solver, and perfect player modes.
+
+bin/config/  ice and mohex patterns, default program settings. 
+
+build/       compiled libraries and object files.
+
+src/         source code.
+
+doc/         compiled doxygen documentation.
+
+solver/      scripts for solving hex on various boardsizes. 
+
+regression/  regression test suite. 
+
+
+src/ is divided up as follows:
+
+util/        misc things: random numbers, timing stuff, hashmap, logger,
+             changelog, etc.  
+
+hex/         basic Hex stuff: boards, games, players, vcs, etc. 
+
+htp/         htp protocol;  based off of Gtp.
+
+benzene/     wrapper stuff for benzene executable.
+
+six/         ported version of Six that supports the HTP protocol. 
+
+test/        unit tests.
+
+
+Building:
+=========
+
+You will need project_explorer/sg includes and library objects. Make a
+symbolic link in the main repository directory to the project_explorer
+directory. Eg:
+
+% pwd
+[blah]/project_wolve2.0/trunk/
+% ln -s [directory containing explorer] project_explorer
+
+
+'make' will build a debug version of the code base. 
+'make BUILDTYPE=release' will build a release version.
+'make PROFILE=1' will build a profiling version.
+'make test' will build and then run the unit test suite. 
+
+Comments:
+=========
+
+This code changes very rapidly.  Nothing in here is safe from
+being changed in the future... 
+

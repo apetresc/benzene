@@ -1,0 +1,15 @@
+#!/bin/sh
+#############################################################################
+# $Id: solver 1657 2008-09-15 23:32:09Z broderic $
+#############################################################################
+#
+# Solver startup script.
+#
+pp=${0%solver}"benzene"
+"$pp"  --player-name=mohex \
+       --vc-and-over-edge=false \
+       --vc-default-max-ors=3 \
+       --vc-full-soft-limit=25 \
+       --vc-semi-soft-limit=50 \
+       $@
+       

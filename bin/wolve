@@ -1,0 +1,14 @@
+#!/bin/sh
+#############################################################################
+# $Id: wolve 1426 2008-06-04 21:18:22Z broderic $ 
+#############################################################################
+#
+# Wolve startup script.
+#
+pp=${0%wolve}"benzene"
+"$pp"  --player-name=wolve \
+       --vc-and-over-edge=true \
+       --vc-full-soft-limit=10 \
+       --vc-semi-soft-limit=25 \
+       $@
+       

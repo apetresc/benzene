@@ -1,0 +1,17 @@
+#!/bin/sh
+#############################################################################
+# $Id: mohex 1663 2008-09-16 00:28:54Z broderic $ 
+#############################################################################
+#
+# MoHex startup script.
+#
+pp=${0%mohex}"benzene"
+"$pp"  --player-name=mohex \
+       --vc-and-over-edge=true \
+       --vc-use-push-rule=true \
+       --vc-full-soft-limit=20 \
+       --vc-semi-soft-limit=35 \
+       --vc-use-patterns=true \
+       --player-check-ladders=true \
+       --ice-iterative-dead-regions=true \
+       $@

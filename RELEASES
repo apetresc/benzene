@@ -1,0 +1,51 @@
+Release roadmap for Benzene
+===========================
+
+Benzene 0.2.0 (released 07/05/01):
+----------------------------------
+* Pattern based UCT player.
+* Very primitive Solver.
+* Multi-level logger. 
+* No alphabeta player.
+* Tournament scripts for automated playing. 
+
+Benzene 0.4.0 (released 07/09/12):
+----------------------------------
+* Unit tests.
+* Doxygen documentation.
+* Regression test suite. 
+* Two distance and resistance evaluation functions. 
+* Much improved Solver, including databases. 
+* Endgame search
+* Many, many code changes and enhancements. 
+* Ported version of Six.
+
+Benzene 0.4.1 (released 07/09/26):
+----------------------------------
+* Optimized VCs considerably.
+* Wolve computes VCs through the edge; ~100 ELO stronger than Six. 
+* Improved Inferior Cell Engine:
+  * multiple vulnerable cell dominators; changed patterns to refelct this. 
+  * iterates on ps-pairs.
+  * computes vulnerable cells before dominated cells.  
+* Six supports the htp commands: 'vc-build', 'vc-between-cells', and
+  'vc-connected-to'.
+* Default program settings loaded from /bin/config/defaults.  
+* More unit/regression tests
+
+Benzene 0.6.0:  
+----------------------------------
+* MoHex: Strengthen VCs tweak
+* MoHex: Flare (tweaked?)
+* MoHex: Prune sealed (tweaked?)
+* Solver: Run and jump?
+* VCs: Search for vcs when mustplay btw grps is size 1?
+* VCs: Back-up of VCs when doing backtracking
+* VCs: Tree iterator (storing trees of semis instead of flat lists)
+
+Benzene 0.8.0: 
+----------------------------------
+* Player: Pondering?
+* Player: Opening book?
+* Player: Time Controls?
+* MoHex: Reuse UCT trees?
