@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([benzene], [0.8.GIT])
+AC_INIT([benzene], [0.8])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([src/hex/HexBoard.cpp])
 AM_CONFIG_HEADER(src/config.h)
@@ -20,7 +20,7 @@ AX_BERKELEY_DB
 dnl TODO: Find a better (more portable) way to enable more optimizations by
 dnl default.
 AC_ARG_ENABLE([optimize],
-   AS_HELP_STRING([--enable-optimize], [set CXXFLAGS to -O2 -g (default is yes)]),
+   AS_HELP_STRING([--enable-optimize], [set CXXFLAGS to -O3 -g (default is yes)]),
    [optimize=$enableval],
    [optimize=yes])
 if test "x$optimize" = "xyes"
