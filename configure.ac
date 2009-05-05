@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([benzene], [0.8.Pamplona2009.rc1])
+AC_INIT([benzene], [0.8])
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([src/hex/HexBoard.cpp])
 AM_CONFIG_HEADER(src/config.h)
