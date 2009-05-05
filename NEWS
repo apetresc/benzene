@@ -1,4 +1,10 @@
 
+Benzene 0.8 (released 09/05/04)
+-------------------------------
+* New MoHex that uses vc knowledge in search tree
+* Book tools totally rewritten
+
+
 Benzene 0.7 (released 09/02/18)
 -------------------------------
 * Build system switched to autotools
