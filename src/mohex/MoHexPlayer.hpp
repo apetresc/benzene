@@ -65,6 +65,12 @@ public:
     /** See ReuseSubtree() */
     void SetReuseSubtree(bool reuse);
 
+    /** Searches while waiting for a command. */
+    bool Ponder() const;
+
+    /** See Ponder() */
+    void SetPonder(bool flag);
+
     // @}
 
 protected:
@@ -84,15 +90,29 @@ protected:
     /** See ReuseSubtree() */
     bool m_reuse_subtree;
 
+    /** See Ponder() */
+    bool m_ponder;
+    
     /** Generates a move in the given gamestate using uct. */
     virtual HexPoint search(HexBoard& brd, const Game& game_state,
 			    HexColor color, const bitset_t& consider,
                             double time_remaining, double& score);
 
-    /** Returns relevant subtree from previous searchtree, if
-        possible. */
-    SgUctTree* TryReuseSubtree(const Game& game);
 
+    HexPoint LastMoveFromHistory(const MoveSequence& history);
+
+    bool PerformPreSearch(HexBoard& brd, HexColor color, bitset_t& consider, 
+                          PointSequence& winningSequence);
+
+    void PrintParameters(HexColor color, double remaining);
+    
+    SgUctTree* TryReuseSubtree(const HexUctSharedData& oldData,
+                               HexUctSharedData& newData);
+
+    void CopyKnowledgeData(const SgUctTree& tree, const SgUctNode& node,
+                           HexColor color, MoveSequence& sequence,
+                           const HexUctSharedData& oldData,
+                           HexUctSharedData& newData) const;
 };
 
 inline std::string MoHexPlayer::name() const
@@ -148,6 +168,16 @@ inline bool MoHexPlayer::ReuseSubtree() const
 inline void MoHexPlayer::SetReuseSubtree(bool reuse)
 {
     m_reuse_subtree = reuse;
+}
+
+inline bool MoHexPlayer::Ponder() const
+{
+    return m_ponder;
+}
+
+inline void MoHexPlayer::SetPonder(bool flag)
+{
+    m_ponder = flag;
 }
 
 //----------------------------------------------------------------------------

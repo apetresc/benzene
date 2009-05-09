@@ -13,6 +13,7 @@
 #include "Benzene.hpp"
 #include "Hash.hpp"
 #include "Logger.hpp"
+#include <cassert>
 
 _BEGIN_BENZENE_NAMESPACE_
 
@@ -57,6 +58,9 @@ public:
     /** Constructs a hashmap with 2^bits slots. */
     HashMap(unsigned bits);
 
+    /** Copy constructor. */
+    HashMap(const HashMap<T>& other);
+
     /** Destructor. */
     ~HashMap();
 
@@ -70,7 +74,7 @@ public:
     unsigned count() const;
 
     /** Retrieves object with key. Returns true on success. */
-    bool get(hash_t key, T& out);
+    bool get(hash_t key, T& out) const;
 
     /** Stores a (key, object) pair. 
      
@@ -96,8 +100,13 @@ public:
     /** Clears the table. */
     void clear();
 
+    /** Copys other's data, overwriting everything in this table. */
+    void operator=(const HashMap<T>& other);
+
 private:    
     
+    static const int EMPTY_SLOT = -1;
+
     struct Data
     {
         hash_t key;
@@ -116,14 +125,15 @@ private:
     /** See count() */
     volatile unsigned m_count;
 
-    /** Pointer (into m_allocated) to data for this slot, 0 if slot is
-        unused. Note that the pointer itself is volatile, not the data
-        at which it is pointing.
+    /** Index into m_allocated at which data for this slot is located;
+        index is equal to EMPTY_SLOT if unused.
      */
-    boost::scoped_array<Data * volatile> m_used;
+    boost::scoped_array<volatile int> m_used;
 
     /** Allocated space for entries in the table. */
     boost::scoped_array<Data> m_allocated;
+
+    void CopyFrom(const HashMap<T>& other);
 };
 
 template<typename T>
@@ -132,10 +142,22 @@ HashMap<T>::HashMap(unsigned bits)
       m_size(1 << bits),
       m_mask(m_size - 1),
       m_count(0),
-      m_used(new Data * volatile[m_size]),
+      m_used(new volatile int[m_size]),
       m_allocated(new Data[m_size])
 {
     clear();
+}
+
+template<typename T>
+HashMap<T>::HashMap(const HashMap<T>& other)
+    : m_bits(other.m_bits),
+      m_size(other.m_size),
+      m_mask(other.m_mask),
+      m_count(other.m_count),
+      m_used(new volatile int[m_size]),
+      m_allocated(new Data[m_size])
+{
+    CopyFrom(other);
 }
 
 template<typename T>
@@ -163,7 +185,7 @@ inline unsigned HashMap<T>::count() const
 
 /** Performs linear probing to find key. */
 template<typename T>
-bool HashMap<T>::get(hash_t key, T& out)
+bool HashMap<T>::get(hash_t key, T& out) const
 {
     // Search for slot containing this key.
     // Limit number of probes to a single pass: Table should never
@@ -172,11 +194,12 @@ bool HashMap<T>::get(hash_t key, T& out)
     for (int guard = m_size; guard > 0; --guard)
     {
         index &= m_mask;
-        if (!m_used[index])
+        if (m_used[index] == EMPTY_SLOT)
             return false;
-        if (m_used[index] && m_used[index]->key == key)
+        if (m_used[index] != EMPTY_SLOT
+            && m_allocated[m_used[index]].key == key)
         {
-            out = m_used[index]->value;
+            out = m_allocated[m_used[index]].value;
             return true;
         }
         index++;
@@ -201,7 +224,6 @@ void HashMap<T>::put(hash_t key, const T& value)
     // Copy data over
     m_allocated[offset].key = key;
     m_allocated[offset].value = value;
-    Data* addr_of_new_data = &m_allocated[offset];
 
     // Find an empty slot
     hash_t index = key;
@@ -209,7 +231,7 @@ void HashMap<T>::put(hash_t key, const T& value)
     {
         index &= m_mask;
         // Atomic: grab slot if unused
-        if (__sync_bool_compare_and_swap(&m_used[index], 0, addr_of_new_data))
+        if (__sync_bool_compare_and_swap(&m_used[index], EMPTY_SLOT, offset))
             break;
         index++;
     }
@@ -219,7 +241,25 @@ template<typename T>
 void HashMap<T>::clear()
 {
     for (unsigned i = 0; i < m_size; ++i)
-        m_used[i] = 0;
+        m_used[i] = EMPTY_SLOT;
+}
+
+template<typename T>
+void HashMap<T>::CopyFrom(const HashMap<T>& other)
+{
+    assert(m_size == other.m_size);
+    m_count = other.m_count;
+    for (unsigned i = 0; i < m_size; ++i)
+    {
+        m_used[i] = other.m_used[i];
+        m_allocated[i] = other.m_allocated[i];
+    }
+}
+
+template<typename T>
+void HashMap<T>::operator=(const HashMap<T>& other)
+{
+    CopyFrom(other);
 }
 
 //----------------------------------------------------------------------------

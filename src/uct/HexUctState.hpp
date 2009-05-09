@@ -12,6 +12,7 @@
 
 #include "HashMap.hpp"
 #include "HexBoard.hpp"
+#include "Move.hpp"
 #include "VC.hpp"
 
 #include <boost/scoped_ptr.hpp>
@@ -36,6 +37,9 @@ struct HexUctStoneData
 
     /** Copies stones from board. */
     HexUctStoneData(const StoneBoard& brd);
+
+    /** Returns true only if all three sets are equal. */
+    bool operator==(const HexUctStoneData& other) const;
 };
 
 inline HexUctStoneData::HexUctStoneData()
@@ -49,6 +53,15 @@ inline HexUctStoneData::HexUctStoneData(const StoneBoard& brd)
 {
 }
 
+inline bool HexUctStoneData::operator==(const HexUctStoneData& other) const
+{
+    return black == other.black 
+        && white == other.white
+        && played == other.played;
+}
+
+//----------------------------------------------------------------------------
+
 /** Data shared among all threads. */
 struct HexUctSharedData
 {
@@ -56,7 +69,7 @@ struct HexUctSharedData
     HexPoint root_last_move_played;
     bitset_t root_consider;
     HexUctStoneData root_stones;
-    std::vector<HexPoint> game_sequence;
+    MoveSequence game_sequence;
 
     HashMap<HexUctStoneData> stones;
 
@@ -155,7 +168,7 @@ public:
 
     bool IsInPlayout() const;
 
-    void Dump(std::ostream& out) const;
+    std::string Dump() const;
 
     /** Sets policy (takes control of pointer) and deletes the old
         one, if it existed. */
@@ -210,15 +223,12 @@ private:
     bool m_isInPlayout;
 
     /** Moves played the game plus moves in tree. */
-    PointSequence m_game_sequence;
+    MoveSequence m_game_sequence;
 
     /** Keeps track of last playout move made.
 	Used for pattern-generated rollouts when call
 	HexUctSearchPolicy. */
     HexPoint m_lastMovePlayed;
-
-    /** Number of stones played since initial board position */
-    int m_numStonesPlayed;
 
     /** True at the start of a game until the first move is played. */
     bool m_new_game;

@@ -1,6 +1,17 @@
 //----------------------------------------------------------------------------
 /** @file HexUctState.cpp
- */
+
+    @note Use SG_ASSERT so that the assertion handler is used to dump
+    the state of each thread when an assertion fails.
+
+    @bug Running with assertions and a non-zero knowledge threshold in
+    lock-free mode will cause some assertions to fail. In particular,
+    the way we handle terminal states (by deleting all children) can
+    cause SgUctChildIterator to discover it has no children (in
+    SgUctSearch::UpdateRaveValues and SgUctSearch::SelectChild) which
+    it asserts is not true. It is also possible for threads to play
+    into filled-in cells during the in-tree phase.
+*/
 //----------------------------------------------------------------------------
 
 #include "SgSystem.h"
@@ -39,7 +50,7 @@ bool GameOver(const StoneBoard& brd)
 /** Determines the winner of a filled-in board. */
 HexColor GetWinner(const StoneBoard& brd)
 {
-    HexAssert(GameOver(brd));
+    SG_ASSERT(GameOver(brd));
     if (BoardUtils::ConnectedOnBitset(brd.Const(), brd.getColor(BLACK), 
                                       NORTH, SOUTH))
         return BLACK;
@@ -57,8 +68,7 @@ HexUctState::AssertionHandler::AssertionHandler(const HexUctState& state)
 
 void HexUctState::AssertionHandler::Run()
 {
-    /** @todo Make Logger an std::ostream! */
-    m_state.Dump(std::cerr);
+    LogSevere() << m_state.Dump() << '\n';
 }
 
 //----------------------------------------------------------------------------
@@ -90,16 +100,19 @@ void HexUctState::SetPolicy(HexUctSearchPolicy* policy)
     m_policy.reset(policy);
 }
 
-void HexUctState::Dump(std::ostream& out) const
+std::string HexUctState::Dump() const
 {
-    out << "HexUctState[" << m_threadId << "] ";
-    if (m_isInPlayout) out << "[playout]";
-    out << "board:" << m_bd;
+    std::ostringstream os;
+    os << "HexUctState[" << m_threadId << "] ";
+    if (m_isInPlayout) 
+        os << "[playout] ";
+    os << "board:" << *m_bd;
+    return os.str();
 }
 
 float HexUctState::Evaluate()
 {
-    HexAssert(GameOver(*m_bd));
+    SG_ASSERT(GameOver(*m_bd));
     float score = (GetWinner(*m_bd) == m_toPlay) ? 1.0 : 0.0;
     return score;
 }
@@ -118,11 +131,12 @@ void HexUctState::ExecutePlayout(SgMove sgmove)
 
 void HexUctState::ExecuteTreeMove(HexPoint move)
 {
+    m_game_sequence.push_back(Move(m_toPlay, move));
     ExecutePlainMove(move, m_treeUpdateRadius);
-    m_game_sequence.push_back(move);
     HexUctStoneData stones;
     if (m_shared_data->stones.get(SequenceHash::Hash(m_game_sequence), stones))
     {
+        m_bd->startNewGame();
         m_bd->setColor(BLACK, stones.black);
         m_bd->setColor(WHITE, stones.white);
         m_bd->setPlayed(stones.played);
@@ -137,9 +151,19 @@ void HexUctState::ExecuteRolloutMove(HexPoint move)
 
 void HexUctState::ExecutePlainMove(HexPoint cell, int updateRadius)
 {
-    // Simply play a stone on the given cell.
-    HexAssert(m_bd->isEmpty(cell));
-    HexAssert(m_bd->updateRadius() == updateRadius);
+    // Lock-free mode: It is possible we are playing into a filled-in
+    // cell during the in-tree phase. This can occur if the thread
+    // happens upon this state after fillin was published but before
+    // the tree was pruned.
+    //   If assertions are off, this results in a board possibly
+    // containing cells of both colors and erroneous pattern state
+    // info, resulting in an inaccurate playout value. In practice,
+    // this does not seem to matter too much.
+    //   If assertions are on, this will cause the search to abort
+    // needlessly.
+    // @todo Handle case when assertions are on.
+    SG_ASSERT(m_bd->isEmpty(cell));
+    SG_ASSERT(m_bd->updateRadius() == updateRadius);
     
     m_bd->playMove(m_toPlay, cell);
     if (updateRadius == 1)
@@ -147,7 +171,6 @@ void HexUctState::ExecutePlainMove(HexPoint cell, int updateRadius)
     else
 	m_bd->update(cell);
     
-    m_numStonesPlayed++;
     m_lastMovePlayed = cell;
     m_new_game = false;
 }
@@ -156,8 +179,6 @@ void HexUctState::ExecutePlainMove(HexPoint cell, int updateRadius)
 bool HexUctState::GenerateAllMoves(std::size_t count, 
                                    std::vector<SgMoveInfo>& moves)
 {
-    HexAssert(m_new_game == (m_numStonesPlayed == 0));
-
     bitset_t moveset;
     bool have_consider_set = false;
     if (m_new_game)
@@ -198,14 +219,14 @@ SgMove HexUctState::GeneratePlayoutMove(bool& skipRaveUpdate)
         return SG_NULLMOVE;
         
     SgPoint move = m_policy->GenerateMove(*m_bd, m_toPlay, m_lastMovePlayed);
-    HexAssert(move != SG_NULLMOVE);
+    SG_ASSERT(move != SG_NULLMOVE);
     return move;
 }
 
 void HexUctState::StartSearch()
 {
     LogInfo() << "StartSearch()[" << m_threadId <<"]" << '\n';
-    m_shared_data = m_search.SharedData();
+    m_shared_data = &m_search.SharedData();
 
     // @todo Fix the interface to HexBoard so this can be constant!
     // The problem is that VCBuilder (which is inside of HexBoard)
@@ -241,7 +262,6 @@ void HexUctState::GameStart()
 {
     m_new_game = true;
     m_isInPlayout = false;
-    m_numStonesPlayed = 0;
     m_game_sequence = m_shared_data->game_sequence;
     m_toPlay = m_shared_data->root_to_play;
     m_lastMovePlayed = m_shared_data->root_last_move_played;
@@ -285,7 +305,10 @@ bitset_t HexUctState::ComputeKnowledge()
     /** @todo Use a more complicated scheme to update the connections?
         For example, if state is close to last one, use incremental
         builds to transition from old to current. */
-    m_vc_brd->SetState(*m_bd);
+    m_vc_brd->startNewGame();
+    m_vc_brd->setColor(BLACK, m_bd->getBlack() & m_bd->getPlayed());
+    m_vc_brd->setColor(WHITE, m_bd->getWhite() & m_bd->getPlayed());
+    m_vc_brd->setPlayed(m_bd->getPlayed());
     m_vc_brd->ComputeAll(m_toPlay, HexBoard::DO_NOT_REMOVE_WINNING_FILLIN);
 
     // Consider set will be non-empty only if a non-determined state.
