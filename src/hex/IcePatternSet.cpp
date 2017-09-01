@@ -21,7 +21,7 @@ void IcePatternSet::LoadPatterns(const boost::filesystem::path& file)
 {
     boost::filesystem::path normalizedFile = file;
     normalizedFile.normalize();
-    std::string nativeFile = normalizedFile.native_file_string();
+    std::string nativeFile = normalizedFile.string();
 
     std::vector<Pattern> patterns;
     Pattern::LoadPatternsFromFile(nativeFile.c_str(), patterns);

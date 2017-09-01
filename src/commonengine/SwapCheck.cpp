@@ -32,7 +32,7 @@ void LoadSwapMoves(const std::string& name)
     path swap_path = path(ABS_TOP_SRCDIR) / "share";
     path swap_list = swap_path / name;
     swap_list.normalize();
-    std::string swap_file = swap_list.native_file_string();
+    std::string swap_file = swap_list.string();
     LogInfo() << "SwapCheck: Loading swap moves: '" << swap_file << "'...\n";
     s_swapMoves.clear();
     std::ifstream s(swap_file.c_str());

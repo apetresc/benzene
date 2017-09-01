@@ -73,7 +73,7 @@ void HexUctSharedPolicy::LoadPatterns()
     using namespace boost::filesystem;
     path p = path(ABS_TOP_SRCDIR) / "share" / "mohex-patterns.txt";
     p.normalize();
-    LoadPlayPatterns(p.native_file_string());
+    LoadPlayPatterns(p.string());
 }
 
 void HexUctSharedPolicy::LoadPlayPatterns(const std::string& filename)

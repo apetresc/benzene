@@ -50,7 +50,7 @@ void VCBuilder::LoadCapturedSetPatterns()
     filename.normalize();
 
     std::vector<Pattern> patterns;
-    Pattern::LoadPatternsFromFile(filename.native_file_string().c_str(), 
+    Pattern::LoadPatternsFromFile(filename.string().c_str(), 
                                   patterns);
 
     LogFine() << "--LoadCapturedSetPatterns()\n";    

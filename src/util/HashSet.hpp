@@ -6,6 +6,7 @@
 #ifndef HASHSET_H
 #define HASHSET_H
 
+#include <iostream>
 #include <boost/scoped_array.hpp>
 
 #include "Benzene.hpp"

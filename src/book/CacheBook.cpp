@@ -18,7 +18,7 @@ CacheBook::CacheBook()
         boost::filesystem::path(ABS_TOP_SRCDIR)
         / "share" / "WolveCacheBook.txt";
     normalizedFile.normalize();
-    std::string nativeFile = normalizedFile.native_file_string();
+    std::string nativeFile = normalizedFile.string();
     std::ifstream f(nativeFile.c_str());
     if (!f.is_open())
         LogWarning() << "Could not open cache book file for reading: '"

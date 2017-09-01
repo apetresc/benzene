@@ -214,7 +214,7 @@ void VCPattern::CreatePatterns(int width, int height)
     boost::filesystem::path pp = boost::filesystem::path(ABS_TOP_SRCDIR) 
         / "share" / "vc-patterns.txt";
     pp.normalize();
-    std::string file = pp.native_file_string();
+    std::string file = pp.string();
     LogFine() << "Loading pattern templates from: '" << file << "'\n";
     std::ifstream fin(file.c_str());
     if (!fin)
