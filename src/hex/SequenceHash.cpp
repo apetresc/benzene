@@ -3,6 +3,7 @@
 //----------------------------------------------------------------------------
 
 #include "SgSystem.h"
+#include "SgRandom.h"
 #include "SequenceHash.hpp"
 
 using namespace benzene;
@@ -21,11 +22,12 @@ struct HashData
 
 HashData::HashData()
 {
+    SgRandom random;
     for (int i = 0; i < BLACK_WHITE_EMPTY; ++i)
-        m_colorHash[i] = SgHash<64>::Random();
+        m_colorHash[i] = SgHash<64>::Random(random);
     for (int i = 0; i < BITSETSIZE; ++i)
         for (int j = 0; j < BITSETSIZE; ++j)
-            m_hashes[i][j] = SgHash<64>::Random();
+            m_hashes[i][j] = SgHash<64>::Random(random);
 }
 
 const HashData& GetHashData()

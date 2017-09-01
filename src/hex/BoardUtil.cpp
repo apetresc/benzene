@@ -111,7 +111,7 @@ HexPoint BoardUtil::RandomEmptyCell(const StoneBoard& brd)
     if (count == 0) 
         return INVALID_POINT;
     
-    int randMove = SgRandom::Global().Int(count) + 1;
+    int randMove = SgRandom().Int(count) + 1;
     for (BitsetIterator p(moves); p; ++p) 
         if (--randMove==0) return *p;
 

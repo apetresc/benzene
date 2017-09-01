@@ -122,6 +122,9 @@ fi
 AC_SUBST(FUEGO_ROOT)
 AC_SUBST(FUEGO_BUILD)
 
+CXXFLAGS="$CXXFLAGS -lpthread"
+LDFLAGS="$LDFLAGS -lpthread"
+
 AX_CXXFLAGS_WARN_ALL
 dnl AX_CXXFLAGS_WARN_ALL should enable -pedantic and -ansi for GCC compilers
 dnl but it doesn't always work 

@@ -53,6 +53,7 @@ HexPoint PerfectPlayer::Search(const HexState& state, const Game& game,
 {
     SG_UNUSED(consider);
     SG_UNUSED(score);
+    SgRandom random;
     LogInfo() << "PerfectPlayer::Search()\n";
     LogInfo() << state.Position() << '\n';
     if (FillinCausedWin())
@@ -65,15 +66,15 @@ HexPoint PerfectPlayer::Search(const HexState& state, const Game& game,
         if (m_fillinWinner == color && inf.Captured(color).any())
         {
             LogInfo() << "PerfectPlayer: Playing into our fillin...\n";
-            return RandomBit(inf.Captured(color), SgRandom::Global());
+            return RandomBit(inf.Captured(color), random);
         }
         else if (m_fillinWinner == !color && inf.Captured(!color).any())
         {
             LogInfo() << "PerfectPlayer: Playing into opponent fillin...\n";
-            return RandomBit(inf.Captured(color), SgRandom::Global());
+            return RandomBit(inf.Captured(color), random);
         }
         LogInfo() << "PerfectPlayer: Playing random empty cell...\n";
-        return RandomBit(state.Position().GetEmpty(), SgRandom::Global());
+        return RandomBit(state.Position().GetEmpty(), random);
     }
     double timeForMove = std::min(m_maxTime, maxTime);
     LogInfo() << "TimeForMove=" << timeForMove << '\n';

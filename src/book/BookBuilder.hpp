@@ -5,6 +5,7 @@
 #ifndef BOOKBUILDER_HPP
 #define BOOKBUILDER_HPP
 
+#include <algorithm>
 #include <cmath>
 #include "BenzenePlayer.hpp"
 #include "BitsetIterator.hpp"
@@ -93,7 +94,7 @@ protected:
 
     void EnsureRootExists();
 
-    bool GenerateMoves(std::vector<SgMove>& moves, float& value);
+    bool GenerateMoves(std::size_t count, std::vector<SgMove>& moves, float& value);
 
     void GetAllLegalMoves(std::vector<SgMove>& moves);
 
@@ -429,7 +430,7 @@ void BookBuilder<PLAYER>::EnsureRootExists()
     untouched. Returns false otherwise, in which case moves will
     contain the sorted moves and value will be untouched. */
 template<class PLAYER>
-bool BookBuilder<PLAYER>::GenerateMoves(std::vector<SgMove>& moves,
+bool BookBuilder<PLAYER>::GenerateMoves(std::size_t count, std::vector<SgMove>& moves,
                                         float& value)
 {
     // Turn off ICE (controlled by method UseICE()): compute the moves
@@ -468,7 +469,7 @@ bool BookBuilder<PLAYER>::GenerateMoves(std::vector<SgMove>& moves,
         // use negative so higher values go to front
         ordered.push_back(HexMoveValue(*it, -resist.Score(*it)));
     std::stable_sort(ordered.begin(), ordered.end());
-    for (std::size_t i = 0; i < ordered.size(); ++i)
+    for (std::size_t i = 0; i < std::min(count, ordered.size()); ++i)
         moves.push_back(ordered[i].point());
     return false;
 }
